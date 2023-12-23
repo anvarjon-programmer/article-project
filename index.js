@@ -1,54 +1,57 @@
-const root = document.querySelector(".row");
-const submit = document.querySelector(".submit");
-const input = document.querySelector(".search");
 
+const root = document.querySelector('.row');
+const search = document.querySelector('.search');
+const loader = document.querySelector('.lds-roller')
 const api = "https://api.spaceflightnewsapi.net/v3/articles";
 let data = [];
-async function fetchApi(url) {
-  let response = await fetch(url);
-  if (response.status === 200) {
-    data = await response.json();
-    console.log(data);
-    renderData(data);
-  }
+
+async function fetchApi(url){
+    try{
+        let response = await fetch(url);
+        if(response.status === 200){
+        data = await response.json();
+        renderData(data)
+        console.log(data);
+    }
+    }catch(error){
+        console.log(error);
+    }
 }
-fetchApi(api);
+fetchApi(api)
 
-function renderData(e) {
-  root.textContent = "";
-  if (e.length) {
-    e.forEach((element) => {
-      console.log(element);
-      const card = document.createElement("div");
-      card.className = "card col-lg-3";
+function renderData(e){
+    loader.style= "display: none"
 
-      const img = document.createElement("img");
-      img.src = element.imageUrl;
-      img.className = "card-img-top";
-
-      const cardBody = document.createElement("div");
-      cardBody.className = "card-body";
-
-      const title = document.createElement("h3");
-      title.textContent = element.title;
-      title.className = "card-title";
-
-      const text = document.createElement("p");
-      text.textContent = `${element.summary.slice(0, 50)}...`;
-      text.classList = "card-title";
-
-      cardBody.appendChild(title);
-      cardBody.appendChild(text);
-      card.appendChild(img);
-      card.appendChild(cardBody);
-      root.appendChild(card);
-    });
-  }
+    root.textContent=''; 
+    if(e.length){
+        const fragment = document.createDocumentFragment();
+        e.forEach((element) => {
+            const card = document.createElement('div');
+            card.className = 'card col-lg-3'
+            card.innerHTML = `
+            <img class='card-img' src=${element.imageUrl} alt=${element.title}>
+            <h3 class='card-title'>${element.title.slice(0,30)}</h3>
+            <p class='card-text'>${element.summary.slice(0,50)}...</p>
+            <p class='card-text2'>${element.summary}</p>
+            <button class='readBtn'>reade more</button>
+            `;
+            fragment.appendChild(card)
+        });
+        root.appendChild(fragment)
+    }
 }
 
-submit.addEventListener("click", (e) => {
-  let searchData = data.filter((element) =>
-    element.title.toLowerCase().includes(input.value.toLowerCase())
-  );
-  renderData(searchData);
-});
+search.addEventListener('input',(e)=>{
+    let serchData = data.filter((element)=>
+    element.title.toLowerCase().includes(search.value.toLowerCase())
+    )
+    renderData(serchData)
+})
+
+
+root.addEventListener('click',(e) =>{
+    if(e.target.closest(".readBtn"))
+    e.target.previousElementSibling.previousElementSibling.style='display:none';
+    e.target.previousElementSibling.style='display:block';
+
+})
